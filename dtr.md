@@ -89,12 +89,14 @@ Data visualizations of current and old paths
 
 Potential pebble dashboard
 
+```
 | * | * | * | * |   |   |   |   |   |   |
 | * | * | * | * | * | * | * | * | * | * |
 | * | * | * | * | * | * | * | * | * | * |
 | * | * | * | * | * | * | * | * | * | * |
 | * | * | * | * | * | * | * | * | * | * |
 | * | * | * | * | * | * | * | * | * | * |
+```
 
 ## Components
 
