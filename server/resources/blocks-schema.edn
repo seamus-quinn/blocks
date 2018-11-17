@@ -1,0 +1,16 @@
+{:objects
+ {:Path
+  {:description "An overarching goal a user wishes to add to their lifestyle."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :description {:type String
+                  :description "A long-form description of the game."}}}}
+
+ :queries
+ {:paths_by_user_id
+  {:type (list :Path)
+   :description "Access all paths for a given user"
+   :args
+   {:user_id {:type ID}}
+   :resolve :query/paths-by-user-id}}}
