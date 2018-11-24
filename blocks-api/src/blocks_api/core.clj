@@ -1,4 +1,4 @@
-(ns server.core)
+(ns blocks-api.core)
 
 (defn foo
   "I don't do a whole lot."

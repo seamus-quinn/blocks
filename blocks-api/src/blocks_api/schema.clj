@@ -1,9 +1,10 @@
-(ns server.schema
+(ns blocks-api.schema
   "Contains custom resolvers and a function to provide the full schema."
   (:require
     [clojure.java.io :as io]
     [com.walmartlabs.lacinia.util :as util]
     [com.walmartlabs.lacinia.schema :as schema]
+    [com.stuartsierra.component :as component]
     [clojure.edn :as edn]))
 
 (def ^:private read-resource
@@ -22,7 +23,7 @@
 (defn coll-to-map [xs] (reduce #(assoc %1 (:id %2) %2) {} xs))
 
 (defn resolver-map
-  []
+  [component]
   (let [data (read-resource "blocks-data.edn")
         paths (:paths data)
         users-map (->> data :users coll-to-map)]
@@ -31,7 +32,20 @@
      :User/paths (partial resolve-user-paths paths)}))
 
 (defn load-schema
-  []
+  [component]
   (-> (read-resource "blocks-schema.edn")
-      (util/attach-resolvers (resolver-map))
+      (util/attach-resolvers (resolver-map component))
       schema/compile))
+
+(defrecord SchemaProvider [schema]
+  
+  component/Lifecycle
+  
+  (start [this]
+    (assoc this :schema (load-schema this)))
+  (stop [this]
+    (assoc this :schema nil)))
+
+(defn new-schema-provider
+  []
+  {:schema-provider (map->SchemaProvider {})})
