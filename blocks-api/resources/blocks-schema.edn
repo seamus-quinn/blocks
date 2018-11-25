@@ -30,7 +30,10 @@
    :description "Retrieve a user by ID number"
    :args
    {:id {:type (non-null ID)}}
-   :resolve :query/user-by-id}}
+   :resolve :query/user-by-id}
+  :users
+  {:type (list User)
+   :resolve :query/users}}
  :mutations
  {:insert_user
   {:type User

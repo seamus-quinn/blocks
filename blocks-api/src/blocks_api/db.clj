@@ -50,3 +50,9 @@
                      (apply max)
                      inc)]
     (swap! db-atom update :users conj (merge {:id next-id} props))))
+
+(defn list-users [db]
+  (->> db
+       :data
+       deref
+       :users))
