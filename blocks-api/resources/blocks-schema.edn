@@ -24,4 +24,10 @@
    :description "Access all paths for a given user"
    :args
    {:user_id {:type ID}}
-   :resolve :query/paths-by-user-id}}}
+   :resolve :query/paths-by-user-id}
+  :user_by_id
+  {:type User
+   :description "Retrieve a user by ID number"
+   :args
+   {:id {:type (non-null ID)}}
+   :resolve :query/user-by-id}}}

@@ -18,9 +18,13 @@
 
 (defn resolve-path-user [users-map c a path]
   (let [{:keys [user_id]} path]
-      (get users-map user_id {:username "not found"})))
+      (get users-map user_id)))
 
-(defn coll-to-map [xs] (reduce #(assoc %1 (:id %2) %2) {} xs))
+(defn resolve-user [users-map c args v]
+  (let [{:keys [id]} args]
+    (get users-map (Integer. id))))
+
+(defn- coll-to-map [xs] (reduce #(assoc %1 (:id %2) %2) {} xs))
 
 (defn resolver-map
   [component]
@@ -28,6 +32,7 @@
         paths (:paths data)
         users-map (->> data :users coll-to-map)]
     {:query/paths-by-user-id (partial resolve-user-paths paths)
+     :query/user-by-id (partial resolve-user users-map)
      :Path/user (partial resolve-path-user users-map)
      :User/paths (partial resolve-user-paths paths)}))
 
