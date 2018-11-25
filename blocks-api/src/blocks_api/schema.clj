@@ -5,52 +5,64 @@
     [com.walmartlabs.lacinia.util :as util]
     [com.walmartlabs.lacinia.schema :as schema]
     [com.stuartsierra.component :as component]
+    [blocks-api.db :as db]
     [clojure.edn :as edn]))
 
-(def ^:private read-resource
-  (comp edn/read-string slurp io/resource))
-
 (defn resolve-user-paths
-  [paths context args user]
-  (let [{:keys [user_id]} args
-        {:keys [id]} user]
-    (filter (comp (partial = (Integer. (or user_id id))) :user_id) paths)))
+  [db]
+  (fn [_ args user]
+    (let [{:keys [user_id]} args
+          {:keys [id]} user]
+      (db/list-paths-for-user db (Integer. (or user_id id))))))
 
-(defn resolve-path-user [users-map c a path]
+(defn resolve-path-user
+  [db]
+  (fn [c a path]
   (let [{:keys [user_id]} path]
-      (get users-map user_id)))
+      (db/find-user db user_id))))
 
-(defn resolve-user [users-map c args v]
-  (let [{:keys [id]} args]
-    (get users-map (Integer. id))))
+(defn resolve-user
+  [db]
+  (fn  [c args v]
+    (let [{:keys [id]} args]
+      (db/find-user db id))))
+
+(defn insert-user
+  [db]
+  (fn [c args v]
+    (let [{:keys [username password]} args]
+      (db/insert-user db {:username username :password password}))))
 
 (defn- coll-to-map [xs] (reduce #(assoc %1 (:id %2) %2) {} xs))
 
 (defn resolver-map
   [component]
-  (let [data (read-resource "blocks-data.edn")
-        paths (:paths data)
-        users-map (->> data :users coll-to-map)]
-    {:query/paths-by-user-id (partial resolve-user-paths paths)
-     :query/user-by-id (partial resolve-user users-map)
-     :Path/user (partial resolve-path-user users-map)
-     :User/paths (partial resolve-user-paths paths)}))
+  (let [db (:db component)]
+    {:query/paths-by-user-id (resolve-user-paths db)
+     :query/user-by-id (resolve-user db)
+     :mutation/insert-user (insert-user db)
+     :Path/user (resolve-path-user db)
+     :User/paths (resolve-user-paths db)}))
 
 (defn load-schema
   [component]
-  (-> (read-resource "blocks-schema.edn")
+  (-> (io/resource "blocks-schema.edn")
+      slurp
+      edn/read-string
       (util/attach-resolvers (resolver-map component))
       schema/compile))
 
 (defrecord SchemaProvider [schema]
-  
   component/Lifecycle
   
   (start [this]
     (assoc this :schema (load-schema this)))
+
   (stop [this]
     (assoc this :schema nil)))
 
 (defn new-schema-provider
   []
-  {:schema-provider (map->SchemaProvider {})})
+  {:schema-provider (-> {}
+                        map->SchemaProvider
+                        (component/using [:db]))})

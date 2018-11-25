@@ -8,7 +8,7 @@
     :paths {:type (list Path)
             :resolve :User/paths}}}
 
- :Path
+  :Path
   {:description "An overarching goal a user wishes to add to their lifestyle."
    :fields
    {:id {:type (non-null ID)}
@@ -30,4 +30,11 @@
    :description "Retrieve a user by ID number"
    :args
    {:id {:type (non-null ID)}}
-   :resolve :query/user-by-id}}}
+   :resolve :query/user-by-id}}
+ :mutations
+ {:insert_user
+  {:type User
+   :args
+   {:username {:type (non-null String)}
+    :password {:type (non-null String)}}
+   :resolve :mutation/insert-user}}}
